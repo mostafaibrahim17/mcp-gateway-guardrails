@@ -10,7 +10,8 @@ plugin/*.so
 __pycache__/
 *.pyc
 
-# generated from ARTICLE.md
+# article source + renders live locally / in the blog, not the repo
+ARTICLE.md
 ARTICLE.html
 
 # local preview/review renders

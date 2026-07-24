@@ -23,16 +23,12 @@ and a SQL-queryable **audit trail**.
 
 ![Architecture: two agents through the Tyk gateway on :8080, fronting the MCP server and OpenAI, with analytics draining through Redis and Tyk Pump into Postgres](assets/architecture.png)
 
-> **OSS vs Dashboard.** This repo runs on the **free open-source gateway**, so the MCP
-> server is proxied as a classic Tyk API and per-tool access control is done in the Go
-> plugin (which parses the JSON-RPC body). Tyk's **native MCP Gateway** does the same
-> declaratively (per-tool rate limits, filtered `tools/list` discovery, JSON-RPC policy),
-> and the enforcement runs on the open-source gateway. The catch is a bug, not a paywall: on a Dashboard-less
-> gateway the OAS-format MCP definitions don't reliably load from files (file-based OAS
-> loading has known rough edges, e.g. [tyk#7460](https://github.com/TykTechnologies/tyk/issues/7460),
-> where a classic def overrides an OAS one on file load). The Dashboard loads them from
-> its own database and sidesteps this, so today native MCP needs it, or a plugin like
-> this one. See the article for more.
+> **OSS vs native MCP gateway.** This repo runs on the **free open-source gateway**, so the MCP
+> server is proxied as a classic Tyk API and per-tool access control is handled by the Go
+> plugin (which parses the JSON-RPC body). Tyk's **native MCP Gateway** does per-tool
+> governance declaratively (per-tool rate limits, filtered `tools/list` discovery, JSON-RPC
+> policy) and is the no-code alternative. The plugin's unique job here is the per-agent
+> **token budget**, which the native gateway doesn't cover.
 
 ## Contents
 
@@ -108,10 +104,8 @@ Every request runs the same set of checks, and any one of them can stop it:
 - **In-memory token counter.** The plugin keeps per-agent totals in process, which
   is fine for one gateway node. For a cluster, move the counter to Redis.
 - **Native MCP Gateway.** Tyk's native MCP gateway does per-tool rate limits and
-  filtered discovery with no code, and it's open source. But on a Dashboard-less gateway
-  the OAS-format definitions don't reliably load from files (file-based OAS loading has
-  known rough edges, e.g. [tyk#7460](https://github.com/TykTechnologies/tyk/issues/7460),
-  where a classic def overrides an OAS one on file load); the Dashboard loads them from
-  its own database. So today native MCP needs the Dashboard, or a plugin like this one.
+  filtered discovery with no code, and it's open source. It's the no-code alternative to
+  this plugin for MCP access control; the plugin's unique job here is the per-agent token
+  budget, which the native gateway doesn't cover.
 - **Managed alternative.** Tyk AI Studio does cost budgets and model governance as a
   separate Tyk product if you'd rather not write the plugin.
