@@ -19,3 +19,6 @@ ARTICLE.html
 
 # research cache
 .firecrawl/
+
+# generated exports
+*.docx

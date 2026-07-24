@@ -30,8 +30,6 @@ That list of five isn't mine. Martin Buhr's ["twelve-point pre-production test f
 
 > **Before you start.** You'll need Docker, since the whole stack runs in Compose, and Python 3 to drive the client. A real `OPENAI_API_KEY` is needed for one step only, the token budget. Everything else, the gateway, Redis, Postgres, Tyk Pump, and even the plugin compiler, comes down as a container. [Clone the repo](https://github.com/mostafaibrahim17/mcp-gateway-guardrails) and you're set.
 
-> **A note on Tyk's native MCP gateway.** Tyk 5.13 added a built-in MCP gateway that reads the JSON-RPC and applies per-tool rules for you, no plugin needed. It's open source, and the team wrote up the design in ["Building an MCP gateway from scratch"](https://tyk.io/blog/building-an-mcp-gateway-from-scratch-how-we-got-to-openapi-for-mcp/). The catch is a bug, not a paywall: in my testing, on a gateway with no Dashboard the OAS-format MCP definition didn't load cleanly from files, so the gateway took it and then acted as if it wasn't there. File-based OAS loading has known rough edges (see [tyk#7460](https://github.com/TykTechnologies/tyk/issues/7460)); the Dashboard sidesteps them by loading definitions from its own database. So the free no-Dashboard route today is a plugin, which is what this guide uses. More on the native path at the end.
-
 ## Stand up Tyk and put the MCP server behind it
 
 The MCP server is a small [FastMCP](https://gofastmcp.com/) app with two tools, one that reads data and one that does the dangerous thing. An agent that can read your orders is a convenience; an agent that can refund them is a liability with a personality, and that split between the two is the whole point of per-tool access.
@@ -237,7 +235,7 @@ Three of the five come free with the open-source gateway, and the other two are 
 
 A few gotchas: match the plugin to your gateway version and rebuild on upgrade, put a bridge in front of any stdio server, keep `mcp` out of your `api_id`, and move the token counter to Redis before you run a second node.
 
-The one real choice is per-tool MCP control, and we put it in a plugin because that runs on the free gateway anywhere today. Tyk's native MCP gateway does the same job with no code but still needs the Dashboard for now, thanks to that bug from earlier, so it's where you go when the plugin starts to feel like a second job. If you want cost and model governance handled for you instead of in your own code, that's what Tyk AI Studio is for.
+The one real choice is per-tool MCP control, and we put it in a plugin because that runs on the free gateway anywhere today. Tyk's native MCP gateway does the same job with no code, and it's the upgrade for when the plugin starts to feel like a second job. If you want cost and model governance handled for you instead of in your own code, that's what [Tyk AI Studio](https://tyk.io/tyk-ai-studio/) is for.
 
 You don't need any of that to start. One free gateway turns those five problems into rules that hold. The refund never happens. The flood gets throttled. The budget runs out. And every call is on the record.
 
@@ -247,4 +245,4 @@ You don't need any of that to start. One free gateway turns those five problems 
 - James Hirst, ["AI agents need API gateways"](https://tyk.io/blog/ai-agents-need-api-gateways/): the argument this post answers with code.
 - [The Model Context Protocol spec](https://modelcontextprotocol.io/): what MCP actually is.
 - [FastMCP](https://gofastmcp.com/): the Python framework used for the demo server.
-- [Tyk MCP Gateway docs](https://tyk.io/docs/ai-management/mcp-gateway/): the native, Dashboard-managed path.
+- [Tyk MCP Gateway docs](https://tyk.io/docs/ai-management/mcp-gateway/): the native path.
